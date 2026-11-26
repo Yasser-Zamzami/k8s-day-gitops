@@ -13,10 +13,16 @@ spec:
         elements:
           - env: dev
             valuesFile: values.yaml
+            namespace: hello-dev
           - env: prod
             valuesFile: values-prod.yaml
+            namespace: hello-prod
           - env: staging
             valuesFile: values.yaml
+            namespace: hello-staging
+          - env: system
+            valuesFile: values.yaml
+            namespace: kube-system
   template:
     metadata:
       name: "hello-web-{{ .env }}"
@@ -35,7 +41,7 @@ spec:
             - "{{ .valuesFile }}"   # later files override earlier ones
       destination:
         server: https://kubernetes.default.svc
-        namespace: "hello-{{ .env }}"
+        namespace: "{{ .namespace }}"
       syncPolicy:
         automated:
           prune: true
