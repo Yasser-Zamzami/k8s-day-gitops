@@ -1,0 +1,44 @@
+# Le chart hello-web publie sur GHCR (registre OCI), deploye sans passer par le dossier Git.
+---
+# Declaration du registre OCI aupres d'Argo CD (paquet public : aucun identifiant).
+apiVersion: v1
+kind: Secret
+metadata:
+  name: repo-ghcr-charts
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: repository
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+stringData:
+  name: ghcr-charts
+  type: helm
+  url: ghcr.io/yasser-zamzami/charts
+  enableOCI: "true"
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hello-web-oci
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  project: default
+  source:
+    repoURL: ghcr.io/yasser-zamzami/charts   # registre OCI, sans "oci://"
+    chart: hello-web
+    targetRevision: 0.2.0                    # version publiee avec helm push
+    helm:
+      releaseName: hello-web
+      valuesObject:
+        greeting: "Hello from GHCR"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: hello-oci
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
