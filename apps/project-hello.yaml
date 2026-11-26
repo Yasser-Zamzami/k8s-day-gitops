@@ -1,0 +1,19 @@
+# Projet "hello" : limite d'ou viennent les manifestes et ou ils peuvent etre deployes.
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: hello
+  namespace: argocd
+  annotations:
+    # Vague -1 : le projet existe avant l'ApplicationSet (vague 0) qui l'utilise.
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  description: Application hello-web, tous environnements
+  # Seule source autorisee : ce depot.
+  sourceRepos:
+    - https://github.com/Yasser-Zamzami/k8s-day-gitops.git
+  # Seules destinations autorisees : les namespaces hello-* du cluster local.
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: "hello-*"
+  # Pas de clusterResourceWhitelist : aucune ressource de niveau cluster (CRD, ClusterRole...) n'est autorisee.
