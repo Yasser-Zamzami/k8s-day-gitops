@@ -1,0 +1,23 @@
+# Application "racine" (app of apps) : elle deploie tout ce qui est dans apps/.
+# Un seul `kubectl apply -f root-app.yaml` amorce tout le cluster.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+  # Supprimer la racine supprime aussi les Applications qu'elle a creees.
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Yasser-Zamzami/k8s-day-gitops.git
+    targetRevision: main
+    path: apps                 # dossier de manifestes Argo CD (Application, ApplicationSet...)
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd          # les Applications vivent toujours dans le namespace d'Argo CD
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
