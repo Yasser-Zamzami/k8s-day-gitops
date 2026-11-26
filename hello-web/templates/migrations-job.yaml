@@ -1,0 +1,32 @@
+# Hook PreSync : Argo CD lance ce Job et attend qu'il reussisse
+# AVANT d'appliquer le reste du chart (Deployment, Service).
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "hello-web.fullname" . }}-migrations
+  labels:
+    {{- include "hello-web.labels" . | nindent 4 }}
+    app.kubernetes.io/component: migrations
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    # Supprime l'ancien Job juste avant d'en recreer un a la synchronisation suivante.
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      # Pas les labels de selection : le Service ne doit pas envoyer de trafic a ce Pod.
+      labels:
+        app.kubernetes.io/component: migrations
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrations
+          image: busybox:1.37
+          command: ["sh", "-c", "echo running migrations; sleep 10; echo migrations done"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 32Mi
