@@ -11,7 +11,7 @@ configs:
   cm:
     # How often Argo CD polls Git. The default is 180s; 30s keeps the lab snappy.
     # In production, use a Git webhook instead of a short polling interval.
-    timeout.reconciliation: 30s
+    timeout.reconciliation: 20s
 
 # SSO (Dex) is not needed: we log in with the local admin account.
 dex:
